@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ads;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdsController extends Controller
 {
@@ -62,7 +63,9 @@ class AdsController extends Controller
      */
     public function show($id)
     {
-        //
+        // $user = Auth::user()->id;
+        $ads = Ads::findOrfail($id);
+        return view('Ads.show', ['ads' => $ads]);
     }
 
     /**
@@ -73,7 +76,8 @@ class AdsController extends Controller
      */
     public function edit($id)
     {
-        //
+        $ads = Ads::findOrfail($id);
+        return view('Ads.edit', ['ads_edit' => $ads]);
     }
 
     /**
@@ -85,7 +89,25 @@ class AdsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $ad_update = Ads::findOrfail($id);
+        $request->validate([
+            'title' => 'required|max:20',
+            'description' => 'required',
+            'category' => 'required',
+            'type' => 'required',
+            'tags' => 'nullable',
+            'advertiser' => 'nullable',
+            'image' => 'nullable|image',
+        ]);
+        $data = $request->all();
+        if (isset($request->image)) {
+            Storage::delete($ad_update->image);
+            $image = $request->file('image')->store('blogs');
+            $data['image'] = $image;
+        }
+        $ad_update->update($data);
+
+        return (redirect(route('ads.index'))->with('success', 'Ad Updated With Id : ' . $ad_update->id));
     }
 
     /**
@@ -96,6 +118,8 @@ class AdsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $delet = Ads::findOrfail($id);
+        $delet->destroy($id);
+        return (redirect(route('ads.index'))->with('success', 'Ad With ID : ' . $delet->id . 'deleted'));
     }
 }

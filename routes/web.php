@@ -16,10 +16,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $ads = Ads::all();
+    return view('welcome', ['ads' => $ads]);
 })->name('home');
 
 
 // route for ads
 
 Route::resource('ads', AdsController::class);
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
